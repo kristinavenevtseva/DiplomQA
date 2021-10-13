@@ -39,12 +39,12 @@ public class PurchasePage {
     private ElementsCollection fields = $$(".input-group__input-case");
 
     public void successfulPurchase() {
-        success.shouldBe(visible, Duration.ofSeconds(15));
+        success.shouldBe(visible, Duration.ofSeconds(20));
         notOk.shouldHave(text("Операция одобрена Банком."));
     }
 
     public void failedPurchase() {
-        failure.shouldBe(visible, Duration.ofSeconds(15));
+        failure.shouldBe(visible, Duration.ofSeconds(20));
         notErr.shouldHave(text("Ошибка! Банк отказал в проведении операции."));
     }
 
