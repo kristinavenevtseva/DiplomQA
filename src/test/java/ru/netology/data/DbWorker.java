@@ -11,19 +11,21 @@ public class DbWorker {
     }
 
     static String url = System.getProperty("database.url");
+    static String user = System.getProperty("database.username");
+    static String password = System.getProperty("database.password");
 
     @SneakyThrows
     public static void cleanTables() {
-//        var clean1SQL = "DELETE FROM credit_request_entity";
+        var clean1SQL = "DELETE FROM credit_request_entity";
         var clean2SQL = "DELETE FROM order_entity";
         var clean3SQL = "DELETE FROM payment_entity";
         var runner = new QueryRunner();
         try (
                 var conn = DriverManager.getConnection(
-                        url, "app", "pass"
+                        url, user, password
                 )
         ) {
-//            runner.update(conn, clean1SQL);
+            runner.update(conn, clean1SQL);
             runner.update(conn, clean2SQL);
             runner.update(conn, clean3SQL);
         }
@@ -35,7 +37,7 @@ public class DbWorker {
         var runner = new QueryRunner();
         try (
                 var conn = DriverManager.getConnection(
-                        url, "app", "pass"
+                        url, user, password
                 )
         ) {
             var amount = runner.query(conn, amountSQL, new ScalarHandler<>());
@@ -43,27 +45,27 @@ public class DbWorker {
         }
     }
 
-//    @SneakyThrows
-//    public static String getTime() {
-//        var timeSQL = "SELECT created FROM order_entity;";
-//        var runner = new QueryRunner();
-//        try (
-//                var conn = DriverManager.getConnection(
-//                        url, "app", "pass"
-//                )
-//        ) {
-//            var time = runner.query(conn, timeSQL, new ScalarHandler<>());
-//            return String.valueOf(time);
-//        }
-//    }
-
     @SneakyThrows
-    public static String getStatus() {
-        var statusSQL = "SELECT status FROM payment_entity WHERE created=(SELECT max(created) FROM payment_entity);";
+    public static Object getPaymentStatus() {
+        var statusSQL = "SELECT status FROM payment_entity WHERE created=(SELECT MAX(created) FROM payment_entity);";
         var runner = new QueryRunner();
         try (
                 var conn = DriverManager.getConnection(
-                        url, "app", "pass"
+                        url, user, password
+                )
+        ) {
+            var status = runner.query(conn, statusSQL, new ScalarHandler<>());
+            return status;
+        }
+    }
+
+    @SneakyThrows
+    public static String getCreditStatus() {
+        var statusSQL = "SELECT status FROM credit_request_entity WHERE created = (SELECT max(created) FROM credit_request_entity);";
+        var runner = new QueryRunner();
+        try (
+                var conn = DriverManager.getConnection(
+                        url, user, password
                 )
         ) {
             var status = runner.query(conn, statusSQL, new ScalarHandler<>());

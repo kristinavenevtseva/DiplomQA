@@ -7,33 +7,25 @@ import ru.netology.data.DataGenerator;
 import ru.netology.data.DbWorker;
 import ru.netology.page.OfferPage;
 
-import java.time.Duration;
-
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
 
 public class PurchaseTest {
 
-//    @BeforeAll
-//    static void setUpAll() {
-//        SelenideLogger.addListener("allure", new AllureSelenide());
-//    }
-
-//    @AfterAll
-//    static void tearDownAll() {
-//        SelenideLogger.removeListener("allure");
-//    }
-
     @BeforeEach
     void setUp() {
-        open("http://localhost:8080");
+        String url = System.getProperty("app.url");
+        open(url);
     }
 
-//    java -Dspring.datasource.url=jdbc:mysql://localhost:3306/app -jar aqa-shop.jar
-//    или
-//    java -Dspring.datasource.url=jdbc:postgresql://localhost:5432/app -jar aqa-shop.jar
+    @BeforeAll
+    static void setUpAll() {
+        SelenideLogger.addListener("allure", new AllureSelenide());
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        SelenideLogger.removeListener("allure");
+    }
 
     @AfterAll
     static void clean() {
@@ -46,9 +38,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, "01", "22", DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(byText("Успешно")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_ok").shouldHave(text("Операция одобрена Банком."));
+        purchasePage.tryPurchase(number, "01", "22", DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.successfulPurchase();
     }
 
     @Test
@@ -58,9 +49,8 @@ public class PurchaseTest {
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
         var year = DataGenerator.generateСurrentYear();
-        purchasePage.validPurchase(number, "12", year, DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(byText("Успешно")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_ok").shouldHave(text("Операция одобрена Банком."));
+        purchasePage.tryPurchase(number, "12", year, DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.successfulPurchase();
     }
 
     @Test
@@ -69,9 +59,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(byText("Успешно")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_ok").shouldHave(text("Операция одобрена Банком."));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.successfulPurchase();
     }
 
     @Test
@@ -81,9 +70,8 @@ public class PurchaseTest {
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
         int year = Integer.parseInt(DataGenerator.generateСurrentYear()) + 5;
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), String.valueOf(year), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(byText("Успешно")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_ok").shouldHave(text("Операция одобрена Банком."));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), String.valueOf(year), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.successfulPurchase();
     }
 
     @Test
@@ -92,9 +80,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getSecondCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(byText("Ошибка")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_error").shouldHave(text("Ошибка! Банк отказал в проведении операции."));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.failedPurchase();
     }
 
     @Test
@@ -102,9 +89,8 @@ public class PurchaseTest {
     void shouldFailedPurchaseByNonexistentCard() {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
-        purchasePage.validPurchase("4444 4444 4444 4445", DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(byText("Ошибка")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_error").shouldHave(text("Ошибка! Банк отказал в проведении операции."));
+        purchasePage.tryPurchase("4444 4444 4444 4445", DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.failedPurchase();
     }
 
     @Test
@@ -112,8 +98,8 @@ public class PurchaseTest {
     void shouldFailedPurchaseByShortCard() {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
-        purchasePage.validPurchase("4444 4444 4444 444", DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(".form-field").shouldHave(text("Номер карты " + "Неверный формат"));
+        purchasePage.tryPurchase("4444 4444 4444 444", DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.incorrectNumber();
     }
 
     @Test
@@ -121,8 +107,8 @@ public class PurchaseTest {
     void shouldFailedPurchaseByCardWithoutNumber() {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
-        purchasePage.validPurchase(null, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $(".form-field").shouldHave(text("Номер карты " + "Неверный формат"));
+        purchasePage.tryPurchase(null, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.incorrectNumber();
     }
 
     @Test
@@ -131,8 +117,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, null, DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(0).shouldHave(text("Месяц " + "Неверный формат"));
+        purchasePage.tryPurchase(number, null, DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.incorrectMonth();
     }
 
     @Test
@@ -141,8 +127,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, "00", DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(0).shouldHave(text("Месяц " + "Неверно указан срок действия карты"));
+        purchasePage.tryPurchase(number, "00", DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.overdueMonth();
     }
 
     @Test
@@ -151,8 +137,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, "13", DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(0).shouldHave(text("Месяц " + "Неверно указан срок действия карты"));
+        purchasePage.tryPurchase(number, "13", DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.overdueMonth();
     }
 
     @Test
@@ -161,8 +147,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), null, DataGenerator.generateName(), DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(1).shouldHave(text("Год " + "Неверный формат"));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), null, DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.incorrectYear();
     }
 
     @Test
@@ -172,8 +158,8 @@ public class PurchaseTest {
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
         int year = Integer.parseInt(DataGenerator.generateСurrentYear()) - 1;
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), String.valueOf(year), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(1).shouldHave(text("Год " + "Истёк срок действия карты"));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), String.valueOf(year), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.overdueCard();
     }
 
     @Test
@@ -183,8 +169,8 @@ public class PurchaseTest {
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
         int year = Integer.parseInt(DataGenerator.generateСurrentYear()) + 6;
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), String.valueOf(year), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(1).shouldHave(text("Год " + "Неверно указан срок действия карты"));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), String.valueOf(year), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.overdueYear();
     }
 
     @Test
@@ -193,8 +179,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, "09", DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(0).shouldHave(text("Месяц " + "Неверно указан срок действия карты"));
+        purchasePage.tryPurchase(number, "09", DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.overdueMonth();
     }
 
     @Test
@@ -203,9 +189,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), "Иванов Иван", DataGenerator.generateCVC());
-        $(byText("Ошибка")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_error").shouldHave(text("Ошибка! Банк отказал в проведении операции."));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), "Иванов Иван", DataGenerator.generateCVC());
+        purchasePage.failedPurchase();
     }
 
     @Test
@@ -214,8 +199,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), null, DataGenerator.generateCVC());
-        $$(".input-group__input-case").get(2).shouldHave(text("Владелец " + "Поле обязательно для заполнения"));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), null, DataGenerator.generateCVC());
+        purchasePage.incorrectHolder();
     }
 
     @Test
@@ -224,9 +209,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), "n", DataGenerator.generateCVC());
-        $(byText("Ошибка")).shouldBe(visible, Duration.ofSeconds(15));
-        $(".notification_status_error").shouldHave(text("Ошибка! Банк отказал в проведении операции."));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), "n", DataGenerator.generateCVC());
+        purchasePage.failedPurchase();
     }
 
     @Test
@@ -235,8 +219,8 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), null);
-        $$(".input-group__input-case").get(3).shouldHave(text("CVC/CVV " + "Неверный формат"));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), null);
+        purchasePage.incorrectCvc();
     }
 
     @Test
@@ -245,7 +229,7 @@ public class PurchaseTest {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), "1");
-        $$(".input-group__input-case").get(3).shouldHave(text("CVC/CVV " + "Неверный формат"));
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), "1");
+        purchasePage.incorrectCvc();
     }
 }

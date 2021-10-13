@@ -24,3 +24,9 @@ services:
       - POSTGRES_DB=app
       - POSTGRES_USER=app
       - POSTGRES_PASSWORD=pass
+
+  node-app:
+    build: BankService
+    image: node-app:1.0
+    ports:
+      - '9999:9999'

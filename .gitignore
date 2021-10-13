@@ -6,3 +6,6 @@ target
 *.iml
 .gradle
 build/
+.allure/
+data_mysql/
+data_postgres/

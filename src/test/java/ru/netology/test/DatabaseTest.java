@@ -1,5 +1,11 @@
 package ru.netology.test;
 
+import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.netology.data.DataGenerator;
 import ru.netology.data.DbWorker;
@@ -10,43 +16,79 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DatabaseTest {
 
+    @BeforeAll
+    static void setUpAll() {
+        SelenideLogger.addListener("allure", new AllureSelenide());
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        SelenideLogger.removeListener("allure");
+    }
+
+    @BeforeEach
+    void setUp() {
+        String url = System.getProperty("app.url");
+        open(url);
+    }
+
+    @SneakyThrows
     @Test
     void shouldReturnCorrectAmount() {
-        open("http://localhost:8080");
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        Thread.sleep(10000);
         var amount = DbWorker.getAmount();
         assertEquals("45000", amount);
     }
 
+    @SneakyThrows
     @Test
-    void shouldReturnCorrectStatusSecondCard() {
-        open("http://localhost:8080");
+    void shouldReturnCorrectPaymentStatusSecondCard() {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getSecondCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        var status = DbWorker.getStatus();
-        assertEquals("DECLINED", status);
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        Thread.sleep(10000);
+        var status = DbWorker.getPaymentStatus();
+        assertEquals("DECLINED", String.valueOf(status));
     }
 
+    @SneakyThrows
     @Test
-    void shouldReturnCorrectStatusFirstCard() {
-        open("http://localhost:8080");
+    void shouldReturnCorrectPaymentStatusFirstCard() {
         var offerPage = new OfferPage();
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
-        purchasePage.validPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        var status = DbWorker.getStatus();
-        assertEquals("APPROVED", status);
+        purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        Thread.sleep(10000);
+        var status = DbWorker.getPaymentStatus();
+        assertEquals("APPROVED", String.valueOf(status));
     }
 
-//    @Test
-//    void shouldReturnCorrectTime() {
-//        var time = DbWorker.getTime();
-//        var now = Date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-//        assertEquals(now, time);
-//    }
+    @SneakyThrows
+    @Test
+    void shouldReturnCorrectCreditStatusSecondCard() {
+        var offerPage = new OfferPage();
+        var creditPage = offerPage.makeCredit();
+        var number = DataGenerator.getSecondCardInfo().getNumber();
+        creditPage.tryCredit(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        Thread.sleep(10000);
+        var status = DbWorker.getCreditStatus();
+        assertEquals("DECLINED", status);
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldReturnCorrectCreditStatusFirstCard() {
+        var offerPage = new OfferPage();
+        var creditPage = offerPage.makeCredit();
+        var number = DataGenerator.getFirstCardInfo().getNumber();
+        creditPage.tryCredit(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
+        Thread.sleep(10000);
+        var status = DbWorker.getCreditStatus();
+        assertEquals("APPROVED", status);
+    }
 }
