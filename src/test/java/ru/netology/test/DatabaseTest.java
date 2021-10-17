@@ -12,9 +12,17 @@ import ru.netology.data.DbWorker;
 import ru.netology.page.OfferPage;
 
 import static com.codeborne.selenide.Selenide.open;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DatabaseTest {
+
+    @BeforeEach
+    void setUp() {
+        String url = System.getProperty("app.url");
+        open(url);
+    }
 
     @BeforeAll
     static void setUpAll() {
@@ -26,10 +34,9 @@ public class DatabaseTest {
         SelenideLogger.removeListener("allure");
     }
 
-    @BeforeEach
-    void setUp() {
-        String url = System.getProperty("app.url");
-        open(url);
+    @AfterAll
+    static void clean() {
+        DbWorker.cleanTables();
     }
 
     @SneakyThrows
@@ -39,7 +46,7 @@ public class DatabaseTest {
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
         purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        Thread.sleep(10000);
+        purchasePage.successfulPurchase();
         var amount = DbWorker.getAmount();
         assertEquals("45000", amount);
     }
@@ -51,7 +58,7 @@ public class DatabaseTest {
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getSecondCardInfo().getNumber();
         purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        Thread.sleep(10000);
+        purchasePage.successfulPurchase();
         var status = DbWorker.getPaymentStatus();
         assertEquals("DECLINED", String.valueOf(status));
     }
@@ -63,7 +70,7 @@ public class DatabaseTest {
         var purchasePage = offerPage.makePurchase();
         var number = DataGenerator.getFirstCardInfo().getNumber();
         purchasePage.tryPurchase(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        Thread.sleep(10000);
+        purchasePage.successfulPurchase();
         var status = DbWorker.getPaymentStatus();
         assertEquals("APPROVED", String.valueOf(status));
     }
@@ -75,7 +82,7 @@ public class DatabaseTest {
         var creditPage = offerPage.makeCredit();
         var number = DataGenerator.getSecondCardInfo().getNumber();
         creditPage.tryCredit(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        Thread.sleep(10000);
+        creditPage.successfulCredit();
         var status = DbWorker.getCreditStatus();
         assertEquals("DECLINED", status);
     }
@@ -87,7 +94,7 @@ public class DatabaseTest {
         var creditPage = offerPage.makeCredit();
         var number = DataGenerator.getFirstCardInfo().getNumber();
         creditPage.tryCredit(number, DataGenerator.generateСurrentMonth(), DataGenerator.generateСurrentYear(), DataGenerator.generateName(), DataGenerator.generateCVC());
-        Thread.sleep(10000);
+        creditPage.successfulCredit();
         var status = DbWorker.getCreditStatus();
         assertEquals("APPROVED", status);
     }

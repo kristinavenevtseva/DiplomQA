@@ -38,12 +38,12 @@ public class CreditPage {
     private ElementsCollection fields = $$(".input-group__input-case");
 
     public void successfulCredit() {
-        success.shouldBe(visible, Duration.ofSeconds(20));
+        success.shouldBe(visible, Duration.ofSeconds(15));
         notOk.shouldHave(text("Операция одобрена Банком."));
     }
 
     public void failedCredit() {
-        failure.shouldBe(visible, Duration.ofSeconds(20));
+        failure.shouldBe(visible, Duration.ofSeconds(15));
         notErr.shouldHave(text("Ошибка! Банк отказал в проведении операции."));
     }
 

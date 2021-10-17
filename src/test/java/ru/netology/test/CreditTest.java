@@ -4,11 +4,18 @@ import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.*;
 import ru.netology.data.DataGenerator;
+import ru.netology.data.DbWorker;
 import ru.netology.page.OfferPage;
 
 import static com.codeborne.selenide.Selenide.*;
 
 public class CreditTest {
+
+    @BeforeEach
+    void setUp() {
+        String url = System.getProperty("app.url");
+        open(url);
+    }
 
     @BeforeAll
     static void setUpAll() {
@@ -20,10 +27,9 @@ public class CreditTest {
         SelenideLogger.removeListener("allure");
     }
 
-    @BeforeEach
-    void setUp() {
-        String url = System.getProperty("app.url");
-        open(url);
+    @AfterAll
+    static void clean() {
+        DbWorker.cleanTables();
     }
 
     @Test
