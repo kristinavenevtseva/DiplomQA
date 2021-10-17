@@ -12,8 +12,6 @@ import ru.netology.data.DbWorker;
 import ru.netology.page.OfferPage;
 
 import static com.codeborne.selenide.Selenide.open;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DatabaseTest {

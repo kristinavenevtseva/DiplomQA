@@ -36,14 +36,13 @@ dependencies {
     testImplementation 'io.rest-assured:rest-assured:4.4.0'
     testImplementation 'com.github.javafaker:javafaker:1.0.2'
     testImplementation 'io.qameta.allure:allure-selenide:2.15.0'
-    testImplementation 'org.awaitility:awaitility:4.1.0'
 }
 
 test {
     useJUnitPlatform()
-    systemProperty 'selenide.headless', System.getProperty('selenide.headless','true')
+    systemProperty 'selenide.headless', System.getProperty('selenide.headless', 'true')
     systemProperty 'database.url', System.getProperty('database.url')
-    systemProperty 'database.username', System.getProperty('database.username','app')
-    systemProperty 'database.password', System.getProperty('database.password','pass')
-    systemProperty 'app.url', System.getProperty('app.url','http://localhost:8080')
+    systemProperty 'database.username', System.getProperty('database.username', 'app')
+    systemProperty 'database.password', System.getProperty('database.password', 'pass')
+    systemProperty 'app.url', System.getProperty('app.url', 'http://localhost:8080')
 }
